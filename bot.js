@@ -24,29 +24,30 @@ bot.onText(/(cde-\d{2})/i, (msg, match) => {
       return;
     }
 
-    // Find the first file that starts with the baseFileName (case-insensitive)
-    const matchingFile = files.find(file => file.toLowerCase().startsWith(baseFileName));
+    // Find any file in the 'images' folder where the name starts with baseFileName (case-insensitive)
+    const matchingFiles = files.filter(file => file.toLowerCase().startsWith(baseFileName.toLowerCase()));
 
-    if (matchingFile) {
-      const filePath = path.join(fileDir, matchingFile);
+    if (matchingFiles.length > 0) {
+      matchingFiles.forEach(file => {
+        const filePath = path.join(fileDir, file);
 
-      // Send the file to the user
-      bot.sendMessage(chatId, `🖼️ **فایل درخواست شده: ${baseFileName}**\n\n📂 در حال ارسال فایل...`, { parse_mode: 'Markdown' })
-        .then(() => {
-          // Send the file regardless of its type (image, txt, pdf, etc.)
-          bot.sendDocument(chatId, filePath) 
-            .then(() => {
-              console.log(`Sent file: ${matchingFile}`);
-            })
-            .catch((error) => {
-              console.error('Error sending file:', error);
-              bot.sendMessage(chatId, '❌ متاسفانه مشکلی در ارسال فایل پیش آمد.');
-            });
-        })
-        .catch((error) => {
-          console.error('Error sending initial message:', error);
-          bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
-        });
+        // Send the file to the user
+        bot.sendMessage(chatId, `🖼️ **فایل درخواست شده: ${file}**\n\n📂 در حال ارسال فایل...`, { parse_mode: 'Markdown' })
+          .then(() => {
+            bot.sendDocument(chatId, filePath) // Use sendDocument to send all types of files
+              .then(() => {
+                console.log(`Sent file: ${file}`);
+              })
+              .catch((error) => {
+                console.error('Error sending file:', error);
+                bot.sendMessage(chatId, '❌ متاسفانه مشکلی در ارسال فایل پیش آمد.');
+              });
+          })
+          .catch((error) => {
+            console.error('Error sending initial message:', error);
+            bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
+          });
+      });
     } else {
       // If no matching file is found
       bot.sendMessage(chatId, `⚠️ **فایلی با نام "${baseFileName}" پیدا نشد.**\nلطفاً نام صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
