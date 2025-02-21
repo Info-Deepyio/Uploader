@@ -11,43 +11,44 @@ const bot = new TelegramBot(token, { polling: true });
 // Path to the directory where your images are stored
 const imageDir = path.join(__dirname, 'images'); // Make sure the path is correct
 
-// Function to send image based on user input (e.g., cde-24)
-bot.onText(/(cde-\d{2})(\.jpg)?/, (msg, match) => {
+// Function to send the file based on user input (e.g., cde-24)
+bot.onText(/(cde-\d{2})/i, (msg, match) => {
   const chatId = msg.chat.id;
-  const imageNumber = match[1]; // Extract the number after "cde-" (e.g., cde-24)
-  const imageName = `${imageNumber}.jpg`; // Always try to find .jpg
+  const baseFileName = match[1].toLowerCase(); // Extract the base name after "cde-" (e.g., "cde-24") and convert to lowercase
 
-  const imagePath = path.join(imageDir, imageName);
-
-  // Debugging message to check paths and image names
-  console.log(`Looking for image: ${imagePath}`);
-
-  // Persian reply with formatting and emojis
-  const replyMessage = `🖼️ **تصویر درخواست شده: ${imageNumber}**\n\n📂 در حال ارسال تصویر...`;
-
-  // Check if the image exists in the directory
-  fs.access(imagePath, fs.constants.F_OK, (err) => {
+  // Scan the 'images' folder for any file that starts with the baseFileName (case-insensitive)
+  fs.readdir(imageDir, (err, files) => {
     if (err) {
-      // If the image doesn't exist, log and send the error message
-      console.log(`Image ${imageName} not found.`);
-      bot.sendMessage(chatId, `⚠️ **تصویری با نام "${imageNumber}.jpg" پیدا نشد.**\nلطفاً نام صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
-    } else {
-      // Image exists, send it
-      bot.sendMessage(chatId, replyMessage, { parse_mode: 'Markdown' })
+      console.error('Error reading images directory:', err);
+      bot.sendMessage(chatId, '❌ مشکلی در دسترسی به پوشه تصاویر پیش آمد.');
+      return;
+    }
+
+    // Find a file that starts with the baseFileName, regardless of the extension, case-insensitive
+    const matchingFile = files.find(file => file.toLowerCase().startsWith(baseFileName));
+
+    if (matchingFile) {
+      const filePath = path.join(imageDir, matchingFile);
+
+      // Send the file to the user
+      bot.sendMessage(chatId, `🖼️ **تصویر درخواست شده: ${baseFileName}**\n\n📂 در حال ارسال فایل...`, { parse_mode: 'Markdown' })
         .then(() => {
-          bot.sendPhoto(chatId, imagePath)
+          bot.sendDocument(chatId, filePath) // Use sendDocument to send all file types, not just images
             .then(() => {
-              console.log(`Sent image: ${imageName}`);
+              console.log(`Sent file: ${matchingFile}`);
             })
             .catch((error) => {
-              console.error('Error sending image:', error);
-              bot.sendMessage(chatId, '❌ متاسفانه مشکلی در ارسال تصویر پیش آمد.');
+              console.error('Error sending file:', error);
+              bot.sendMessage(chatId, '❌ متاسفانه مشکلی در ارسال فایل پیش آمد.');
             });
         })
         .catch((error) => {
           console.error('Error sending initial message:', error);
           bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
         });
+    } else {
+      // If no matching file is found
+      bot.sendMessage(chatId, `⚠️ **فایلی با نام "${baseFileName}" پیدا نشد.**\nلطفاً نام صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
     }
   });
 });
