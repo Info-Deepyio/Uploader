@@ -9,14 +9,14 @@ const token = '7711851099:AAEI5Ploe3vdQ5pb4ha0RzduRT51x0PXc_U';
 const bot = new TelegramBot(token, { polling: true });
 
 // Path to the directory where your images are stored
-const imageDir = path.join(__dirname, 'images');
+const imageDir = path.join(__dirname, 'images'); // Ensure the path is correct
 
 // Function to send image based on user input (e.g., cde-24)
 bot.onText(/cde-(\d{2})/, (msg, match) => {
   const chatId = msg.chat.id;
   const imageNumber = match[1]; // Extract the number after "cde-"
 
-  const imageName = `cde-${imageNumber}.jpg`; // Add .jpg extension by default
+  const imageName = `cde-${imageNumber}.jpg`; // Always try to find .jpg
   const imagePath = path.join(imageDir, imageName);
 
   // Persian reply with formatting and emojis
@@ -41,6 +41,7 @@ bot.onText(/cde-(\d{2})/, (msg, match) => {
         bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
       });
   } else {
+    // If the image doesn't exist, inform the user
     bot.sendMessage(chatId, `⚠️ **تصویری با نام "cde-${imageNumber}.jpg" پیدا نشد.**\nلطفاً نام صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
   }
 });
