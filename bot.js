@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Replace with your actual Telegram bot token
-const token = '7711851099:AAEI5Ploe3vdQ5pb4ha0RzduRT51x0PXc_U';
+const token = '7710164431:AAEJPjXnIHgDfyXUub9hX5mhyD-mND2_8K0';
 
 // Create a bot instance
 const bot = new TelegramBot(token, { polling: true });
