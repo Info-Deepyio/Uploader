@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const path = require('path');
 const fs = require('fs');
 
-// Replace with your actual Teleram bot token
+// Replace with your actual Telegram bot token
 const token = '7711851099:AAEI5Ploe3vdQ5pb4ha0RzduRT51x0PXc_U';
 
 // Create a bot instance
@@ -16,7 +16,7 @@ bot.onText(/cde-(\d{2})/, (msg, match) => {
   const chatId = msg.chat.id;
   const imageNumber = match[1]; // Extract the number after "cde-"
 
-  const imageName = `cde-${imageNumber}.jpg`;
+  const imageName = `cde-${imageNumber}.jpg`; // Add .jpg extension
   const imagePath = path.join(imageDir, imageName);
 
   // Persian reply with formatting and emojis
@@ -41,7 +41,7 @@ bot.onText(/cde-(\d{2})/, (msg, match) => {
         bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
       });
   } else {
-    bot.sendMessage(chatId, `⚠️ **تصویری با نام "cde-${imageNumber}" پیدا نشد.**\nلطفاً شماره صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
+    bot.sendMessage(chatId, `⚠️ **تصویری با نام "cde-${imageNumber}.jpg" پیدا نشد.**\nلطفاً نام صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
   }
 });
 
