@@ -1,27 +1,49 @@
 const TelegramBot = require('node-telegram-bot-api');
 const path = require('path');
+const fs = require('fs');
 
-// Replace with your Telegram bot token
+// Replace with your actual Telegram bot token
 const token = '7711851099:AAEI5Ploe3vdQ5pb4ha0RzduRT51x0PXc_U';
 
 // Create a bot instance
 const bot = new TelegramBot(token, { polling: true });
 
-// Listen for messages and handle commands
-bot.onText(/\.getfont/, (msg) => {
+// Path to the directory where your images are stored
+const imageDir = path.join(__dirname, 'images');
+
+// Function to send image based on user input (e.g., cde-24)
+bot.onText(/cde-(\d{2})/, (msg, match) => {
   const chatId = msg.chat.id;
+  const imageNumber = match[1]; // Extract the number after "cde-"
 
-  // Path to the Start_Survey.zip file in the same directory as this script
-  const filePath = path.join(__dirname, 'Start_Survey.zip');
+  const imageName = `cde-${imageNumber}.jpg`;
+  const imagePath = path.join(imageDir, imageName);
 
-  // Send the file to the user
-  bot.sendDocument(chatId, filePath)
-    .then(() => {
-      console.log('Start_Survey.zip sent successfully');
-    })
-    .catch((error) => {
-      console.error('Error sending Start_Survey.zip:', error);
-    });
+  // Persian reply with formatting and emojis
+  const replyMessage = `🖼️ **تصویر درخواست شده: cde-${imageNumber}**\n\n📂 در حال ارسال تصویر...`;
+
+  // Check if the image exists in the directory
+  if (fs.existsSync(imagePath)) {
+    // Send the image to the user
+    bot.sendMessage(chatId, replyMessage, { parse_mode: 'Markdown' })
+      .then(() => {
+        bot.sendPhoto(chatId, imagePath)
+          .then(() => {
+            console.log(`Sent image: ${imageName}`);
+          })
+          .catch((error) => {
+            console.error('Error sending image:', error);
+            bot.sendMessage(chatId, '❌ متاسفانه مشکلی در ارسال تصویر پیش آمد.');
+          });
+      })
+      .catch((error) => {
+        console.error('Error sending initial message:', error);
+        bot.sendMessage(chatId, '❌ مشکلی در ارسال پیام پیش آمد.');
+      });
+  } else {
+    bot.sendMessage(chatId, `⚠️ **تصویری با نام "cde-${imageNumber}" پیدا نشد.**\nلطفاً شماره صحیحی وارد کنید.`, { parse_mode: 'Markdown' });
+  }
 });
 
-console.log('Bot is running...');
+// Start the bot
+console.log('🎉 بات در حال اجراست...');
