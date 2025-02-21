@@ -16,7 +16,7 @@ bot.onText(/cde-(\d{2})/, (msg, match) => {
   const chatId = msg.chat.id;
   const imageNumber = match[1]; // Extract the number after "cde-"
 
-  const imageName = `cde-${imageNumber}.jpg`; // Add .jpg extension
+  const imageName = `cde-${imageNumber}.jpg`; // Add .jpg extension by default
   const imagePath = path.join(imageDir, imageName);
 
   // Persian reply with formatting and emojis
@@ -46,4 +46,4 @@ bot.onText(/cde-(\d{2})/, (msg, match) => {
 });
 
 // Start the bot
-console.log('🎉 بات در حال اجراست...');
+console.log('🎉 Bot is running...');
