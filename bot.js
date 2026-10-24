@@ -1,8 +1,8 @@
 
 const axios = require("axios");
 
-const TOKEN = process.env.BOT_TOKEN;
-const API = `https://api.telegram.org/bot${TOKEN}`;
+const TOKEN = "2109246071:MmcE0OZiBfNsMKL8ib4wjoMo68TaJykd-wk";
+const API = `https://tapi.bale.ai/bot${TOKEN}`;
 
 let offset = 0;
 
