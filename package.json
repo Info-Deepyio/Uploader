@@ -1,17 +1,13 @@
+
 {
-  "name": "telegram-bot",
+  "name": "railway-telegram-bot",
   "version": "1.0.0",
-  "description": "A Telegram bot to send a zip file",
-  "main": "bot.js",
+  "private": true,
+  "main": "index.js",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.55.0"
-  },
-  "engines": {
-    "node": "16.x"
-  },
-  "author": "",
-  "license": "ISC"
+    "axios": "^1.12.2"
+  }
 }
