@@ -1,47 +1,56 @@
-const TelegramBot = require('node-telegram-bot-api');
-const path = require('path');
-const fs = require('fs');
 
-// Replace with your actual Telegram bot token
-const token = '7710164431:AAEJPjXnIHgDfyXUub9hX5mhyD-mND2_8K0';
+const axios = require("axios");
 
-// Create a bot instance
-const bot = new TelegramBot(token, { polling: true });
+const TOKEN = process.env.BOT_TOKEN;
+const API = `https://api.telegram.org/bot${TOKEN}`;
 
-// Path to the directory where your files are stored
-const fileDir = path.join(__dirname, 'images'); // Ensure this path is correct
+let offset = 0;
 
-// Function to send the file based on user input (e.g., /file <anyfilename>)
-bot.onText(/\/file\s+(.+)/i, (msg, match) => {
-  const chatId = msg.chat.id;
-  const requestedFile = match[1].toLowerCase().trim(); // Get the user input, case-insensitive
+async function getUpdates() {
+  try {
+    const response = await axios.get(`${API}/getUpdates`, {
+      params: {
+        offset,
+        timeout: 30
+      },
+      timeout: 35000
+    });
 
-  // Scan the 'images' folder for any file that matches the requestedFile (case-insensitive)
-  fs.readdir(fileDir, (err, files) => {
-    if (err) {
-      console.error('Error reading images directory:', err);
-      return;
+    for (const update of response.data.result) {
+      offset = update.update_id + 1;
+
+      const message = update.message;
+      if (!message?.text) continue;
+
+      if (message.text.trim().split(/\s+/)[0].split("@")[0] === "/start") {
+        await axios.post(`${API}/sendMessage`, {
+          chat_id: message.chat.id,
+          text: "Hello! 👋 Welcome to the bot."
+        });
+      }
     }
+  } catch (error) {
+    console.error(
+      "Telegram error:",
+      error.response?.data || error.message
+    );
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  }
+}
 
-    // Filter the files by checking if their name matches the user input (case-insensitive)
-    const matchingFiles = files.filter(file => file.toLowerCase().startsWith(requestedFile));
+async function main() {
+  if (!TOKEN) {
+    throw new Error("BOT_TOKEN environment variable is missing.");
+  }
 
-    if (matchingFiles.length > 0) {
-      // Send the matching file(s)
-      matchingFiles.forEach(file => {
-        const filePath = path.join(fileDir, file);
-        bot.sendDocument(chatId, filePath)
-          .then(() => {
-            console.log(`Sent file: ${file}`);
-          })
-          .catch((error) => {
-            console.error('Error sending file:', error);
-          });
-      });
-    }
-    // If no matching file is found, do nothing (no response sent)
-  });
-});
+  // Remove any existing webhook so long polling can work.
+  await axios.post(`${API}/deleteWebhook`);
 
-// Start the bot
-console.log('🎉 Bot is running...');
+  console.log("Bot started. Listening for /start...");
+
+  while (true) {
+    await getUpdates();
+  }
+}
+
+main().catch(console.error);
